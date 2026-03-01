@@ -1,3 +1,0 @@
-# Install via pip after activating the conda env.
-streamlit
-plotly
