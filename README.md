@@ -18,7 +18,7 @@ The dashboard runs on http://localhost:3001. By default it uses mock data. Set `
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEXT_PUBLIC_EXCHANGE_URL` | http://localhost:3000 | A2A-SE exchange base URL |
+| `NEXT_PUBLIC_EXCHANGE_URL` | http://localhost:3000 | A2A-SE exchange base URL (no `/v1` suffix) |
 | `NEXT_PUBLIC_POLL_INTERVAL` | 5000 | Polling interval in ms |
 | `NEXT_PUBLIC_USE_MOCK` | true | Use mock data instead of real exchange |
 | `NEXT_PUBLIC_APP_NAME` | A2A Settlement Dashboard | App display name |
@@ -35,3 +35,11 @@ npm start
 - Next.js 14 (App Router)
 - React 18, Tailwind CSS, shadcn/ui
 - Recharts, TanStack Query
+
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [a2a-settlement](https://github.com/a2a-settlement/a2a-settlement) | Core exchange — the API this dashboard connects to |
+| [a2a-settlement-auth](https://github.com/a2a-settlement/a2a-settlement-auth) | OAuth economic authorization — revoke tokens via kill switch |
+| [a2a-settlement-mediator](https://github.com/a2a-settlement/a2a-settlement-mediator) | Dispute resolution — view escalation status |
