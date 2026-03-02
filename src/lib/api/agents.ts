@@ -2,7 +2,7 @@
  * Agents API - list, detail, suspend, revoke
  */
 
-import { isMockMode } from "./client";
+import { apiRequest, isMockMode } from "./client";
 import type { Agent, AgentDetail } from "./types";
 import { MOCK_AGENTS } from "@/mock/data";
 import { getMockAgentDetail } from "@/mock/data";
@@ -41,53 +41,39 @@ export async function listAgents(
     const agents = filtered.slice(offset, offset + limit);
     return { agents, total };
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
   const qs = new URLSearchParams(params as Record<string, string>);
-  const res = await fetch(`${base}/api/v1/agents?${qs}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<{ agents: Agent[]; total: number }>(`/api/v1/agents?${qs}`);
 }
 
 export async function getAgent(agentId: string): Promise<AgentDetail | null> {
   if (isMockMode()) {
     return Promise.resolve(getMockAgentDetail(agentId) ?? null);
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/agents/${agentId}`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  try {
+    return await apiRequest<AgentDetail>(`/api/v1/agents/${agentId}`);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("404")) return null;
+    throw e;
+  }
 }
 
 export async function suspendAgent(agentId: string): Promise<void> {
   if (isMockMode()) {
     return Promise.resolve();
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/agents/${agentId}/suspend`, {
-    method: "POST",
-  });
-  if (!res.ok) throw new Error(await res.text());
+  await apiRequest(`/api/v1/dashboard/agents/${agentId}/suspend`, { method: "POST" });
 }
 
 export async function unsuspendAgent(agentId: string): Promise<void> {
   if (isMockMode()) {
     return Promise.resolve();
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/agents/${agentId}/unsuspend`, {
-    method: "POST",
-  });
-  if (!res.ok) throw new Error(await res.text());
+  await apiRequest(`/api/v1/dashboard/agents/${agentId}/unsuspend`, { method: "POST" });
 }
 
 export async function revokeToken(jti: string): Promise<void> {
   if (isMockMode()) {
     return Promise.resolve();
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/tokens/${jti}/revoke`, {
-    method: "POST",
-  });
-  if (!res.ok) throw new Error(await res.text());
+  await apiRequest(`/api/v1/dashboard/tokens/${jti}/revoke`, { method: "POST" });
 }

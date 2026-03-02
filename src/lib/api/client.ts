@@ -11,6 +11,10 @@ const isMockMode = (): boolean => {
   return process.env.NEXT_PUBLIC_USE_MOCK === "true";
 };
 
+const getDashboardApiKey = (): string => {
+  return process.env.NEXT_PUBLIC_DASHBOARD_API_KEY || "";
+};
+
 export interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
@@ -25,10 +29,17 @@ export async function apiRequest<T>(
   const baseUrl = getBaseUrl();
   const url = path.startsWith("http") ? path : `${baseUrl.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
 
+  const authHeaders: Record<string, string> = {};
+  const apiKey = getDashboardApiKey();
+  if (apiKey) {
+    authHeaders["Authorization"] = `Bearer ${apiKey}`;
+  }
+
   const config: RequestInit = {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...headers,
     },
   };
@@ -52,4 +63,4 @@ export async function apiRequest<T>(
   }
 }
 
-export { getBaseUrl, isMockMode };
+export { getBaseUrl, getDashboardApiKey, isMockMode };

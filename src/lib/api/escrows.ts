@@ -2,7 +2,7 @@
  * Escrows API - list, detail, force refund
  */
 
-import { isMockMode } from "./client";
+import { apiRequest, isMockMode } from "./client";
 import type { Escrow, EscrowDetail } from "./types";
 import { MOCK_ESCROWS } from "@/mock/data";
 
@@ -46,11 +46,8 @@ export async function listEscrows(
     const escrows = filtered.slice(offset, offset + limit);
     return { escrows, total };
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
   const qs = new URLSearchParams(params as Record<string, string>);
-  const res = await fetch(`${base}/api/v1/escrows?${qs}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<{ escrows: Escrow[]; total: number }>(`/api/v1/escrows?${qs}`);
 }
 
 export async function getEscrow(escrowId: string): Promise<EscrowDetail | null> {
@@ -58,21 +55,17 @@ export async function getEscrow(escrowId: string): Promise<EscrowDetail | null> 
     const escrow = MOCK_ESCROWS.find((e) => e.id === escrowId);
     return Promise.resolve(escrow ?? null);
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/escrows/${escrowId}`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  try {
+    return await apiRequest<EscrowDetail>(`/api/v1/escrows/${escrowId}`);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("404")) return null;
+    throw e;
+  }
 }
 
 export async function forceRefund(escrowId: string): Promise<void> {
   if (isMockMode()) {
     return Promise.resolve();
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(
-    `${base}/api/v1/dashboard/escrows/${escrowId}/force-refund`,
-    { method: "POST" }
-  );
-  if (!res.ok) throw new Error(await res.text());
+  await apiRequest(`/api/v1/dashboard/escrows/${escrowId}/force-refund`, { method: "POST" });
 }

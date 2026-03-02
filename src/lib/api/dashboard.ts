@@ -2,7 +2,7 @@
  * Dashboard aggregate API - overview, spending, alerts
  */
 
-import { isMockMode } from "./client";
+import { apiRequest, isMockMode } from "./client";
 import type {
   DashboardOverview,
   SpendingDataPoint,
@@ -25,10 +25,7 @@ export async function getOverview(): Promise<DashboardOverview> {
   if (isMockMode()) {
     return Promise.resolve(MOCK_OVERVIEW);
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/overview`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<DashboardOverview>("/api/v1/dashboard/overview");
 }
 
 export async function getSpending(
@@ -39,20 +36,17 @@ export async function getSpending(
     const days = range === "24h" ? 1 : range === "7d" ? 7 : 30;
     return Promise.resolve(MOCK_SPENDING.slice(-days));
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
   const qs = new URLSearchParams(params as Record<string, string>);
-  const res = await fetch(`${base}/api/v1/dashboard/spending?${qs}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<SpendingDataPoint[]>(`/api/v1/dashboard/spending?${qs}`);
 }
 
 export async function getActivity(limit = 20): Promise<ActivityEvent[]> {
   if (isMockMode()) {
     return Promise.resolve(MOCK_ACTIVITY.slice(0, limit));
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/overview?activity_limit=${limit}`);
-  const data = await res.json();
+  const data = await apiRequest<{ recent_activity?: ActivityEvent[] }>(
+    `/api/v1/dashboard/overview?activity_limit=${limit}`
+  );
   return data.recent_activity ?? [];
 }
 
@@ -60,8 +54,5 @@ export async function getAlerts(): Promise<Alert[]> {
   if (isMockMode()) {
     return Promise.resolve(MOCK_ALERTS);
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/dashboard/alerts`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<Alert[]>("/api/v1/dashboard/alerts");
 }

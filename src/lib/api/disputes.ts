@@ -2,7 +2,7 @@
  * Disputes API - list, detail, override resolution
  */
 
-import { isMockMode } from "./client";
+import { apiRequest, isMockMode } from "./client";
 import type { Dispute } from "./types";
 import { MOCK_DISPUTES } from "@/mock/data";
 
@@ -40,11 +40,8 @@ export async function listDisputes(
     const disputes = filtered.slice(offset, offset + limit);
     return { disputes, total };
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
   const qs = new URLSearchParams(params as Record<string, string>);
-  const res = await fetch(`${base}/api/v1/disputes?${qs}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return apiRequest<{ disputes: Dispute[]; total: number }>(`/api/v1/disputes?${qs}`);
 }
 
 export async function getDispute(disputeId: string): Promise<Dispute | null> {
@@ -52,11 +49,12 @@ export async function getDispute(disputeId: string): Promise<Dispute | null> {
     const dispute = MOCK_DISPUTES.find((d) => d.id === disputeId);
     return Promise.resolve(dispute ?? null);
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/disputes/${disputeId}`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  try {
+    return await apiRequest<Dispute>(`/api/v1/disputes/${disputeId}`);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("404")) return null;
+    throw e;
+  }
 }
 
 export async function overrideResolution(
@@ -66,11 +64,8 @@ export async function overrideResolution(
   if (isMockMode()) {
     return Promise.resolve();
   }
-  const base = process.env.NEXT_PUBLIC_EXCHANGE_URL || "";
-  const res = await fetch(`${base}/api/v1/disputes/${disputeId}/resolve`, {
+  await apiRequest(`/api/v1/disputes/${disputeId}/resolve`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ resolution }),
+    body: { resolution },
   });
-  if (!res.ok) throw new Error(await res.text());
 }
