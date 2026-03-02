@@ -15,6 +15,14 @@ export interface Agent {
 }
 
 export interface AgentDetail extends Agent {
+  bot_name?: string;
+  developer_id?: string;
+  developer_name?: string;
+  contact_email?: string;
+  description?: string;
+  skills?: string[];
+  daily_spend_limit?: number;
+  frozen_until?: string | null;
   delegation_chain?: DelegationLink[];
   tokens?: TokenInfo[];
   spending_limits?: SpendingLimit;
