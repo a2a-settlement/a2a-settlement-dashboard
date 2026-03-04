@@ -71,12 +71,39 @@ export interface Escrow {
   task_id?: string;
 }
 
+export interface SourceRef {
+  uri: string;
+  method?: string;
+  timestamp?: string;
+  content_hash?: string;
+}
+
+export interface Provenance {
+  source_type: "api" | "database" | "web" | "generated" | "hybrid";
+  source_refs: SourceRef[];
+  attestation_level: "self_declared" | "signed" | "verifiable";
+  signature?: string;
+}
+
+export interface ProvenanceResult {
+  verified: boolean;
+  tier: string;
+  confidence: number;
+  flags: string[];
+  recommendation: "approve" | "flag" | "reject";
+}
+
 export interface EscrowDetail extends Escrow {
   dispute_reason?: string;
   resolution_strategy?: string;
   resolved_at?: string;
   group_id?: string;
   depends_on?: string[];
+  required_attestation_level?: "self_declared" | "signed" | "verifiable";
+  delivered_content?: string;
+  provenance?: Provenance;
+  provenance_result?: ProvenanceResult;
+  delivered_at?: string;
 }
 
 export interface Dispute {
@@ -107,7 +134,7 @@ export interface SpendingDataPoint {
 
 export interface ActivityEvent {
   id: string;
-  type: "escrow_created" | "escrow_released" | "escrow_refunded" | "escrow_disputed" | "escrow_expired";
+  type: "escrow_created" | "escrow_delivered" | "escrow_released" | "escrow_refunded" | "escrow_disputed" | "escrow_expired";
   timestamp: string;
   agent_id: string;
   amount?: number;
