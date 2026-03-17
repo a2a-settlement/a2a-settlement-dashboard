@@ -8,8 +8,9 @@ import { DelegationChain } from "./DelegationChain";
 import { TokenCard } from "./TokenCard";
 import { SpendingLimits } from "./SpendingLimits";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { AttestationPanel } from "./AttestationPanel";
 import { useState } from "react";
-import type { AgentDetail as AgentDetailType } from "@/lib/api/types";
+import type { AgentDetail as AgentDetailType, Attestation, RevocationReason } from "@/lib/api/types";
 import { MOCK_ESCROWS } from "@/mock/data";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import Link from "next/link";
@@ -20,8 +21,22 @@ export function AgentDetail(props: {
   onRevokeToken: (jti: string) => Promise<void>;
   isSuspending: boolean;
   isRevoking: boolean;
+  attestations?: Attestation[];
+  onRevokeAttestation?: (id: string, reason: RevocationReason) => Promise<void>;
+  onRenewAttestation?: (id: string) => Promise<void>;
+  isAttestationLoading?: boolean;
 }) {
-  const { agent, onSuspend, onRevokeToken, isSuspending, isRevoking } = props;
+  const {
+    agent,
+    onSuspend,
+    onRevokeToken,
+    isSuspending,
+    isRevoking,
+    attestations = [],
+    onRevokeAttestation,
+    onRenewAttestation,
+    isAttestationLoading,
+  } = props;
   const [confirmSuspend, setConfirmSuspend] = useState(false);
 
   const agentEscrows = MOCK_ESCROWS.filter(
@@ -108,6 +123,13 @@ export function AgentDetail(props: {
           </CardContent>
         </Card>
       )}
+
+      <AttestationPanel
+        attestations={attestations}
+        onRevoke={onRevokeAttestation}
+        onRenew={onRenewAttestation}
+        isLoading={isAttestationLoading}
+      />
 
       <div className="flex gap-2">
         <Button

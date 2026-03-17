@@ -159,12 +159,41 @@ export interface ActivityEvent {
 
 export interface Alert {
   id: string;
-  type: "spending_limit" | "reputation_drop" | "dispute" | "anomaly";
+  type: "spending_limit" | "reputation_drop" | "dispute" | "anomaly" | "attestation_expiring" | "attestation_expired" | "attestation_revoked";
   severity: "warning" | "critical";
   agent_id?: string;
   message: string;
   timestamp: string;
   link?: string;
+}
+
+export type AttestationType = "identity" | "reputation" | "transaction" | "capability";
+export type AttestationStatus = "active" | "expired" | "revoked" | "renewed";
+export type RevocationReason = "key_compromise" | "erroneous_issuance" | "deregistration" | "policy_violation";
+
+export interface Attestation {
+  id: string;
+  account_id: string;
+  attestation_type: AttestationType;
+  status: AttestationStatus;
+  issued_at: string;
+  expires_at?: string;
+  revoked_at?: string;
+  revocation_reason?: RevocationReason;
+  parent_attestation_id?: string;
+  ttl_remaining_seconds?: number;
+}
+
+export interface AttestationStatusResponse {
+  id: string;
+  status: AttestationStatus;
+  attestation_type: AttestationType;
+  issued_at: string;
+  expires_at?: string;
+  ttl_remaining_seconds?: number;
+  revoked_at?: string;
+  revocation_reason?: RevocationReason;
+  in_flight_grace: boolean;
 }
 
 export interface HealthResponse {
