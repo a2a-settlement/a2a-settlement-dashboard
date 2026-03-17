@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   BarChart3,
   Settings,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const navItems = [
   { href: "/agents", label: "Agents", icon: Users },
   { href: "/escrows", label: "Escrows", icon: Lock },
   { href: "/disputes", label: "Disputes", icon: AlertTriangle },
+  { href: "/federation", label: "Federation", icon: Network },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
