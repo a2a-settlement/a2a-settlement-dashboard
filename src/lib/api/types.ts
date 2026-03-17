@@ -64,7 +64,7 @@ export interface Escrow {
   provider_id: string;
   amount: number;
   fee_amount?: number;
-  status: "pending" | "held" | "released" | "refunded" | "disputed" | "expired";
+  status: "pending" | "held" | "released" | "refunded" | "disputed" | "expired" | "evidence_pending";
   created_at: string;
   updated_at: string;
   expires_at?: string;
@@ -93,8 +93,23 @@ export interface ProvenanceResult {
   recommendation: "approve" | "flag" | "reject";
 }
 
+export interface EvidenceSubmission {
+  id: string;
+  escrow_id: string;
+  submitter_id: string;
+  evidence_type: string;
+  summary: string;
+  artifact_count: number;
+  encrypted: boolean;
+  submitted_at: string;
+}
+
 export interface EscrowDetail extends Escrow {
   dispute_reason?: string;
+  dispute_filed_by?: string;
+  dispute_stake_amount?: number;
+  dispute_stake_status?: string;
+  evidence_window_closes_at?: string;
   resolution_strategy?: string;
   resolved_at?: string;
   group_id?: string;
