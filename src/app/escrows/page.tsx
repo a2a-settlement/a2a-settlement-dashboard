@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEscrowsList } from "@/lib/hooks/useEscrows";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { SelfDealingBadge } from "@/components/shared/SelfDealingBadge";
 import { TokenAmount } from "@/components/shared/TokenAmount";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,18 +16,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Escrow } from "@/lib/api/types";
+import type { Escrow, SelfDealingClass } from "@/lib/api/types";
 
 const STATUS_OPTIONS = ["pending", "held", "released", "refunded", "disputed", "expired"];
+const SDC_OPTIONS: SelfDealingClass[] = ["arms_length", "suspected_self_dealing", "self_dealing"];
 
 export default function EscrowsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sdcFilter, setSdcFilter] = useState<string>("all");
 
   const { data, isLoading } = useEscrowsList({
     status: statusFilter !== "all" ? statusFilter : undefined,
   });
 
-  const escrows = data?.escrows ?? [];
+  const escrows = (data?.escrows ?? []).filter(
+    (e) => sdcFilter === "all" || e.self_dealing_class === sdcFilter
+  );
+
   const columns: Column<Escrow>[] = [
     {
       id: "id",
@@ -41,6 +47,11 @@ export default function EscrowsPage() {
     { id: "provider", header: "Provider", cell: (row) => row.provider_id },
     { id: "amount", header: "Amount", cell: (row) => <TokenAmount amount={row.amount} /> },
     { id: "status", header: "Status", cell: (row) => <StatusBadge status={row.status} type="escrow" /> },
+    {
+      id: "sdc",
+      header: "Class",
+      cell: (row) => <SelfDealingBadge value={row.self_dealing_class} />,
+    },
     { id: "created", header: "Created", cell: (row) => new Date(row.created_at).toLocaleDateString() },
     { id: "updated", header: "Updated", cell: (row) => new Date(row.updated_at).toLocaleDateString() },
   ];
@@ -59,6 +70,24 @@ export default function EscrowsPage() {
             {STATUS_OPTIONS.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={sdcFilter} onValueChange={setSdcFilter}>
+          <SelectTrigger className="w-[210px]">
+            <SelectValue placeholder="Transaction class" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All classes</SelectItem>
+            {SDC_OPTIONS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s === "arms_length"
+                  ? "Arms-length"
+                  : s === "suspected_self_dealing"
+                  ? "Suspected self-dealing"
+                  : "Self-dealing"}
               </SelectItem>
             ))}
           </SelectContent>

@@ -27,6 +27,9 @@ export interface AgentDetail extends Agent {
   tokens?: TokenInfo[];
   spending_limits?: SpendingLimit;
   counterparties?: CounterpartySummary[];
+  unique_counterparties_90d?: number;
+  counterparty_hhi?: number | null;
+  diversity_score?: number | null;
 }
 
 export interface DelegationLink {
@@ -58,6 +61,57 @@ export interface CounterpartySummary {
   reputation: number;
 }
 
+export type SelfDealingClass = "arms_length" | "suspected_self_dealing" | "self_dealing";
+
+export interface CounterpartyDiversity {
+  agent_id: string;
+  unique_counterparties_90d: number;
+  counterparty_hhi: number | null;
+  diversity_score: number | null;
+}
+
+export interface PrincipalLink {
+  principal_id: string;
+  principal_type: "human" | "org" | "unknown";
+  kya_level: "none" | "basic" | "attested" | "verified";
+  link_source: "registration" | "attestation" | "payment_graph" | "behavioral_cluster" | "manual";
+  confidence: number;
+  established_at: string | null;
+}
+
+export interface AgentPrincipal {
+  agent_id: string;
+  links: PrincipalLink[];
+}
+
+export interface ComplianceFeedEntry {
+  id: string;
+  timestamp: string;
+  source_agent: string;
+  target_agent: string;
+  escrow_id: string | null;
+  self_dealing_class: SelfDealingClass | null;
+  policy_decision: string;
+  details: Record<string, unknown> | null;
+}
+
+export interface DiversityOutlier {
+  exchange_account_id: string;
+  bot_name: string;
+  principal_id: string | null;
+  counterparty_hhi: number;
+  snapshot_at: string | null;
+}
+
+export interface EconomicVelocity {
+  window_days: number;
+  total_volume: number;
+  arms_length_volume: number;
+  self_dealing_volume: number;
+  apparent_velocity: number;
+  economic_velocity: number;
+}
+
 export interface Escrow {
   id: string;
   requester_id: string;
@@ -65,6 +119,7 @@ export interface Escrow {
   amount: number;
   fee_amount?: number;
   status: "pending" | "held" | "released" | "refunded" | "disputed" | "expired" | "evidence_pending";
+  self_dealing_class?: SelfDealingClass;
   created_at: string;
   updated_at: string;
   expires_at?: string;
